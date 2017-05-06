@@ -2,23 +2,99 @@
 $resultData = "ERROR";
 $jsonFile = "userData.json";
 
+function getJSON(){
+  return json_decode(file_get_contents($jsonFile));
+}
+
 function getFavorites($username){
+  $json = getJSON();
   
-}
-function addFavorite($username, $jsonData){
-  
-}
-function createUser($username, $password){
-  
-}
-function login($username, $password){
-  //if json contains username:
-  
-  $storedPassword = ""; //get from json file
-  
-  if(password_verify($password, $storedPassword)){
-    //return the user
+  foreach ($json as $user) {
+    if ($user['username'] == $username) {
+      return $user['favorites'];
+    }
   }
+  
+  return "Could not find user";
+}
+
+function addFavorite($username, $jsonData){
+  $json = getJSON();
+  
+  foreach ($json as $user) {
+    if ($user['username'] == $username) {
+      $favoriteData = json_decode($jsonData);
+      
+      //Check if favorite is already in list
+      //Check favorites for entry
+      foreach ($user['favorites'] as $favorite){
+        if ($favorite['link'] == $favoriteData['link']) {
+          return $favorite;
+        }
+      }
+      
+      //otherwise add it to favorites
+      array_push($user['favorites'], $favoriteData);
+    }
+  }
+  
+  return "Could not find user";
+}
+
+function removeFavorite($username, $favoriteLink){
+  $json = getJSON();
+  
+  foreach ($json as $user) {
+    if ($user['username'] == $username) {
+      
+      //Check favorites for entry
+      foreach ($user['favorites'] as $favorite){
+        if ($favorite['link'] == $favoriteLink) {
+          unset($user['favorites'][$favorite]);
+          return $user['favorites'];
+        }
+      }
+      
+      return "Error finding favorite"
+    }
+  }
+  
+  return "Could not find user";
+}
+
+function createUser($username, $password){
+  $json = getJSON();
+  
+  foreach ($json as $user) {
+    if ($user['username'] == $username) {
+      return "User already exists";
+    }
+  }
+  
+  //If the user doesn't exist
+  $userData = array("username" => $username, "password" => $password, "favorites" => array());
+  array_push($json, $userData);
+    
+  return $userData;
+}
+
+function login($username, $password){
+  $json = getJSON();
+  
+  foreach ($json as $user) {
+    if ($user['username'] == $username) {
+      $storedPassword = $user['password'];
+    
+      if(password_verify($password, $storedPassword)){
+        return $json['username'];
+      }
+      
+      return "Invalid password"; 
+    }
+  }
+  
+  return "User doesn't exist";
+
 }
   
 //check what function is being called
@@ -28,28 +104,28 @@ if (isset($_GET["function"]))
     //If the client is calling getFavorites
     case "getFavorites":
       if(isset($_GET["username"])){
-        return getFavorites($_GET["username"]);
+        $resultData = getFavorites($_GET["username"]);
       }
       else{
-        return "Incorrect parameters";
+        $resultData = "Incorrect parameters";
       }
       break;
     //If the client is calling addFavorite
     case "addFavorite":
       if(isset($_POST["username"]) && isset($_POST["jsonData"])){
-        return addFavorite($_POST["username"], $_POST["jsonData"]));
+        $resultData = addFavorite($_POST["username"], $_POST["jsonData"]);
       }
       else{
-        return "Incorrect parameters";
+        $resultData = "Incorrect parameters";
       }
       break;
     //If the client is calling createUser
     case "createUser":
       if(isset($_POST["username"]) && isset($_POST["password"])){
-        return createUser($_POST["username"], $_POST["password"]));
+        $resultData = createUser($_POST["username"], $_POST["password"]);
       }
       else{
-        return "Incorrect parameters";
+        $resultData = "Incorrect parameters";
       }
       break;
   }
