@@ -10,6 +10,8 @@ let amountShown = 0;
 let bbcIcon;
 let cnnIcon;
 
+let currentUser;
+
 class Article{
   constructor(provider, topic, pubDate, title, description, link){
     this.title = title;
@@ -38,8 +40,8 @@ let shownProviders = [];
 let shownTopics = []
 
 const init = () =>{
-  loadUser();
-  //createUser("user", "password");
+  
+  createUser("user", "password");
 
   //Set the window scroll function for generating random strings
   $(window).scroll(function() {
@@ -60,7 +62,7 @@ const init = () =>{
 
   loadRSS('http://feeds.bbci.co.uk/news/world/rss.xml?edition=uk', 'bbc', 'general');
   loadRSS('http://rss.cnn.com/rss/cnn_topstories.rss', 'cnn', 'general');
-
+  
 };
 
 window.onload = init;
@@ -103,31 +105,35 @@ window.onload = init;
 };
 
 const createUser = (username, password) => {
-  let data = {function: "createUser", username: username, password: password};
-  //loadJSON("POST", data);
+  let data = {username: username, password: password};
+  loadJSON("POST", "createUser", data);
+};
+const addFavorite = (username, article) => {
+  let data = {username: username, jsonData: JSON.stringify(article)};
+  loadJSON("POST", "addFavorite", data);
 };
 
-const loadJSON = (type, requestData) => {
+const loadJSON = (type, functionName, requestData) => {
   $.ajax({
       type: type,
-      url: "fileIO.php",
+      url: "fileIO.php?function="+functionName,
       dataType: "json",
       data: requestData,
       success: onJSONLoaded,
       error: function(xhr, status, error) {
-        var err = "(" + xhr.responseText + ")"; 
-        console.log(err);
-          console.log(error);
-          console.log(status);
+        console.log(error);
+        console.log(status);
       }
   }); 
 };
 
-const loadUser = () => {
+const loadUser = (user, jsonD) => {
+  let article = JSON.stringify(loadedArticles[0]);
   $.ajax({
-      type: 'GET',
-      url: "fileIO.php?",
+      type: 'POST',
+      url: "fileIO.php?function=addFavorite",
       dataType: "json",
+      data: {username: "madison", jsonData: article},
       success: onJSONLoaded,
       error: function(xhr, status, error) {
           console.log(error);

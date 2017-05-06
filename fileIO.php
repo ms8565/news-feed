@@ -1,9 +1,11 @@
 <?php
 $resultData = "ERROR";
-$jsonFile = "userData.json";
+$jsonFile = "http://www.se.rit.edu/~ms8565/news-feed/userData.json";
 
 function getJSON(){
-  return json_decode(file_get_contents($jsonFile));
+  $file = file_get_contents('./userData.json');
+  return json_decode($file, true);
+
 }
 
 function getFavorites($username){
@@ -23,7 +25,7 @@ function addFavorite($username, $jsonData){
   
   foreach ($json as $user) {
     if ($user['username'] == $username) {
-      $favoriteData = json_decode($jsonData);
+      $favoriteData = json_decode($jsonData, true);
       
       //Check if favorite is already in list
       //Check favorites for entry
@@ -35,6 +37,12 @@ function addFavorite($username, $jsonData){
       
       //otherwise add it to favorites
       array_push($user['favorites'], $favoriteData);
+      
+      $json[$username] = $user;
+      
+      file_put_contents('./userData.json', json_encode($json));
+      
+      return $favoriteData;
     }
   }
   
@@ -51,7 +59,7 @@ function removeFavorite($username, $favoriteLink){
      //Check favorites for entry
       foreach ($user['favorites'] as $favorite){
         if ($favorite['link'] == $favoriteLink) {
-          //unset($user['favorites'][$favorite]);
+          unset($user['favorites'][$favorite]);
           return $user['favorites'];
         }
       }
@@ -75,6 +83,7 @@ function createUser($username, $password){
   //If the user doesn't exist
   $userData = array("username" => $username, "password" => $password, "favorites" => array());
   array_push($json, $userData);
+  file_put_contents('./userData.json', json_encode($json));
     
   return $userData;
 }
@@ -101,14 +110,14 @@ function login($username, $password){
 
   
 //check what function is being called
-if (isset($_GET["function"]))
+if (isset($_GET["function"]) || isset($_POST["function"]) )
 {
   switch($_GET["function"]){
     //If the client is calling getFavorites
     case "getFavorites":
       if(isset($_GET["username"])){
         
-        //$resultData = getFavorites($_GET["username"]);
+        $resultData = getFavorites($_GET["username"]);
       }
       else{
         $resultData = "Incorrect parameters";
@@ -132,13 +141,28 @@ if (isset($_GET["function"]))
         $resultData = "Incorrect parameters";
       }
       break;
+    case "removeFavorite":
+      if(isset($_POST["username"]) && isset($_POST["link"])){
+        $resultData = removeFavorite($_POST["username"], $_POST["link"]);
+      }
+      else{
+        $resultData = "Incorrect parameters";
+      }
+      break;
+    case "login":
+      if(isset($_POST["username"]) && isset($_POST["password"])){
+        $resultData = login($_POST["username"], $_POST["password"]);
+      }
+      else{
+        $resultData = "Incorrect parameters";
+      }
+      break;
     default:
       $resultData = "Does not match any functions";
   }
   
   
 }
-$resultData = "No function provided";
 
 //return JSON
 header('Content-type:application/json;charset=utf-8');
