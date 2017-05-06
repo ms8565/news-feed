@@ -41,21 +41,22 @@ function addFavorite($username, $jsonData){
   return "Could not find user";
 }
 
+
 function removeFavorite($username, $favoriteLink){
   $json = getJSON();
   
   foreach ($json as $user) {
     if ($user['username'] == $username) {
       
-      //Check favorites for entry
+     //Check favorites for entry
       foreach ($user['favorites'] as $favorite){
         if ($favorite['link'] == $favoriteLink) {
-          unset($user['favorites'][$favorite]);
+          //unset($user['favorites'][$favorite]);
           return $user['favorites'];
         }
       }
       
-      return "Error finding favorite"
+      return "Error finding favorite";
     }
   }
   
@@ -85,7 +86,7 @@ function login($username, $password){
     if ($user['username'] == $username) {
       $storedPassword = $user['password'];
     
-      if(password_verify($password, $storedPassword)){
+      if($password == $storedPassword){
         return $json['username'];
       }
       
@@ -96,6 +97,8 @@ function login($username, $password){
   return "User doesn't exist";
 
 }
+
+
   
 //check what function is being called
 if (isset($_GET["function"]))
@@ -104,7 +107,8 @@ if (isset($_GET["function"]))
     //If the client is calling getFavorites
     case "getFavorites":
       if(isset($_GET["username"])){
-        $resultData = getFavorites($_GET["username"]);
+        
+        //$resultData = getFavorites($_GET["username"]);
       }
       else{
         $resultData = "Incorrect parameters";
@@ -128,17 +132,15 @@ if (isset($_GET["function"]))
         $resultData = "Incorrect parameters";
       }
       break;
+    default:
+      $resultData = "Does not match any functions";
   }
   
+  
 }
+$resultData = "No function provided";
 
 //return JSON
 header('Content-type:application/json;charset=utf-8');
 echo json_encode($resultData);
 ?>
-
-<!--
-  //Read from the json
-  else if($_SEVER['REQUEST_METHOD'] === 'GET') {
-
-  }-->

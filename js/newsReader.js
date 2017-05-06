@@ -38,6 +38,8 @@ let shownProviders = [];
 let shownTopics = []
 
 const init = () =>{
+  loadUser();
+  //createUser("user", "password");
 
   //Set the window scroll function for generating random strings
   $(window).scroll(function() {
@@ -52,8 +54,8 @@ const init = () =>{
     let checkbox = document.getElementById('checkbox');
   }
   
-  bbcIcon = document.getElementById('bbc-icon');
-  cnnIcon = document.getElementById('cnn-icon');
+  //bbcIcon = document.getElementById('bbc-icon');
+  //cnnIcon = document.getElementById('cnn-icon');
 
 
   loadRSS('http://feeds.bbci.co.uk/news/world/rss.xml?edition=uk', 'bbc', 'general');
@@ -63,7 +65,7 @@ const init = () =>{
 
 window.onload = init;
 
- const loadJSON = () => {
+ const loadJSONObj = () => {
   var select = document.getElementById('json-select');
   var url = 'json/' + select.options[select.selectedIndex].value;
 
@@ -98,6 +100,44 @@ window.onload = init;
   // try to prevent browser caching by sending a header to the server
   xhr.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2017 00:00:00 GMT");
   xhr.send();
+};
+
+const createUser = (username, password) => {
+  let data = {function: "createUser", username: username, password: password};
+  //loadJSON("POST", data);
+};
+
+const loadJSON = (type, requestData) => {
+  $.ajax({
+      type: type,
+      url: "fileIO.php",
+      dataType: "json",
+      data: requestData,
+      success: onJSONLoaded,
+      error: function(xhr, status, error) {
+        var err = "(" + xhr.responseText + ")"; 
+        console.log(err);
+          console.log(error);
+          console.log(status);
+      }
+  }); 
+};
+
+const loadUser = () => {
+  $.ajax({
+      type: 'GET',
+      url: "fileIO.php?",
+      dataType: "json",
+      success: onJSONLoaded,
+      error: function(xhr, status, error) {
+          console.log(error);
+          console.log(status);
+      }
+  }); 
+};
+
+const onJSONLoaded = (data) => {
+  console.log(data);
 };
 
 const loadRSS = (rssUrl, provider, topic) =>{
